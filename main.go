@@ -1,44 +1,53 @@
 package main
 
 import (
-	"net/http"
-
+	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"kastouri/web-service-gin/controllers"
+	"kastouri/web-service-gin/services"
+	"log"
 )
 
-type album struct {
-	ID     string  `json:"id"`
-	Title  string  `json:"title"`
-	Artist string  `json:"artist"`
-	Price  float64 `json:"price"`
-}
+var (
+	server           *gin.Engine
+	artistService    services.ArtistService
+	artistController controllers.ArtistController
+	ctx              context.Context
+	artistCollection *mongo.Collection
+	mongoclient      *mongo.Client
+	err              error
+)
 
-var albums = []album{
-	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
-	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
-	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
-}
+func init() {
+	ctx = context.TODO()
 
-func getAlbums(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, albums)
-}
-func postAlbums(c *gin.Context) {
-	var newAlbum album
-
-	// Call BindJSON to bind the received JSON to
-	// newAlbum.
-	if err := c.BindJSON(&newAlbum); err != nil {
-		return
+	mongoconn := options.Client().ApplyURI("mongodb://localhost:27017")
+	mongoclient, err = mongo.Connect(ctx, mongoconn)
+	if err != nil {
+		log.Fatal("error while connecting with mongo", err)
+	}
+	err = mongoclient.Ping(ctx, readpref.Primary())
+	if err != nil {
+		log.Fatal("error while trying to ping mongo", err)
 	}
 
-	// Add the new album to the slice.
-	albums = append(albums, newAlbum)
-	c.IndentedJSON(http.StatusCreated, newAlbum)
-}
-func main() {
-	router := gin.Default()
-	router.GET("/albums", getAlbums)
-	router.POST("/albums", postAlbums)
+	fmt.Println("mongo connection established")
 
-	router.Run("localhost:8080")
+	artistCollection = mongoclient.Database("userdb").Collection("users")
+	artistService = services.NewArtistService(artistCollection, ctx)
+	artistController = controllers.New(artistService)
+	server = gin.Default()
+}
+
+func main() {
+	defer mongoclient.Disconnect(ctx)
+
+	basePath := server.Group("/v1")
+	artistController.RegisterRoutes(basePath)
+
+	log.Fatal(server.Run(":9090"))
 }
