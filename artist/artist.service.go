@@ -1,17 +1,11 @@
-package services
+package artist
 
 import (
 	"context"
-	_ "context"
-	"errors"
-	_ "errors"
 	"go.mongodb.org/mongo-driver/bson"
-	_ "go.mongodb.org/mongo-driver/bson"
-	_ "go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	_ "go.mongodb.org/mongo-driver/mongo"
-	"kastouri/web-service-gin/models"
-	_ "kastouri/web-service-gin/models"
+	"time"
 )
 
 type ArtistService struct {
@@ -25,24 +19,25 @@ func NewArtistService(artistCollection *mongo.Collection, ctx context.Context) A
 		Context:          ctx,
 	}
 }
-func (s *ArtistService) CreateArtist(artist *models.Artist) error {
+func (s *ArtistService) CreateArtist(artist *ArtistDTO) error {
+	artist.CreateAt = time.Now()
+	artist.UpdateAt = time.Now()
 	_, err := s.ArtistCollection.InsertOne(s.Context, artist)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
-func (s *ArtistService) GetArtist(id string) (*models.Artist, error) {
-	var artist models.Artist
-	err := s.ArtistCollection.FindOne(s.Context, bson.M{"_id": id}).Decode(&artist)
+func (s *ArtistService) GetArtist(id string) (*Artist, error) {
+	var artist Artist
+	objID, _ := primitive.ObjectIDFromHex(id)
+	err := s.ArtistCollection.FindOne(s.Context, bson.M{"_id": objID}).Decode(&artist)
 	if err != nil {
 		return nil, err
 	}
 	return &artist, nil
 }
 
-func (s *ArtistService) UpdateArtist(id string, artist *models.Artist) error {
+func (s *ArtistService) UpdateArtist(id string, artist *Artist) error {
+	artist.UpdateAt = time.Now()
 	_, err := s.ArtistCollection.UpdateOne(s.Context, bson.M{"_id": id}, bson.M{"$set": artist})
 	if err != nil {
 		return err
@@ -51,20 +46,21 @@ func (s *ArtistService) UpdateArtist(id string, artist *models.Artist) error {
 }
 
 func (s *ArtistService) DeleteArtist(id string) error {
-	_, err := s.ArtistCollection.DeleteOne(s.Context, bson.M{"_id": id})
+	filter := bson.D{{"_id", id}}
+	_, err := s.ArtistCollection.DeleteOne(s.Context, filter)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (s *ArtistService) GetArtists() ([]models.Artist, error) {
-	var artists []models.Artist
+func (s *ArtistService) GetArtists() ([]Artist, error) {
+	var artists []Artist
 	cursor, err := s.ArtistCollection.Find(s.Context, bson.D{{}})
 	if err != nil {
 		return nil, err
 	}
 	for cursor.Next(s.Context) {
-		var artist models.Artist
+		var artist Artist
 		err := cursor.Decode(&artist)
 		if err != nil {
 			return nil, err
@@ -72,9 +68,6 @@ func (s *ArtistService) GetArtists() ([]models.Artist, error) {
 		artists = append(artists, artist)
 	}
 	cursor.Close(s.Context)
-	if len(artists) == 0 {
-		return nil, errors.New("no artists found")
-	}
 
 	return artists, nil
 }
