@@ -2,7 +2,7 @@ package album
 
 import "time"
 
-type AlbumDTO struct {
+type DTO struct {
 	Name     string   `json:"name"`
 	Genres   []string `json:"genres"`
 	Artist   string   `json:"artist""`

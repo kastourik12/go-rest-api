@@ -20,7 +20,7 @@ func NewSongService(songCollection *mongo.Collection, ctx context.Context) Servi
 		Context:        ctx,
 	}
 }
-func (s *Service) CreateSong(song *SongDTO) error {
+func (s *Service) CreateSong(song *DTO) error {
 
 	createdSong, err := NewSong(*song)
 	if err != nil {

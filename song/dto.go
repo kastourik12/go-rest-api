@@ -1,6 +1,6 @@
 package song
 
-type SongDTO struct {
+type DTO struct {
 	Name   string   `json:"name"`
 	Length string   `json:"length"`
 	Genres []string `json:"genres"`

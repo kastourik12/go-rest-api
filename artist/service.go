@@ -8,25 +8,25 @@ import (
 	"time"
 )
 
-type ArtistService struct {
+type Service struct {
 	ArtistCollection *mongo.Collection
 	Context          context.Context
 }
 
-func NewArtistService(artistCollection *mongo.Collection, ctx context.Context) ArtistService {
-	return ArtistService{
+func NewArtistService(artistCollection *mongo.Collection, ctx context.Context) Service {
+	return Service{
 		ArtistCollection: artistCollection,
 		Context:          ctx,
 	}
 }
-func (s *ArtistService) CreateArtist(artist *ArtistDTO) error {
+func (s *Service) CreateArtist(artist *DTO) error {
 	artist.CreateAt = time.Now()
 	artist.UpdateAt = time.Now()
 	_, err := s.ArtistCollection.InsertOne(s.Context, artist)
 	return err
 }
 
-func (s *ArtistService) GetArtist(id string) (*Artist, error) {
+func (s *Service) GetArtist(id string) (*Artist, error) {
 	var artist Artist
 	objID, _ := primitive.ObjectIDFromHex(id)
 	err := s.ArtistCollection.FindOne(s.Context, bson.M{"_id": objID}).Decode(&artist)
@@ -36,7 +36,7 @@ func (s *ArtistService) GetArtist(id string) (*Artist, error) {
 	return &artist, nil
 }
 
-func (s *ArtistService) UpdateArtist(id string, artist *Artist) error {
+func (s *Service) UpdateArtist(id string, artist *Artist) error {
 	artist.UpdateAt = time.Now()
 	_, err := s.ArtistCollection.UpdateOne(s.Context, bson.M{"_id": id}, bson.M{"$set": artist})
 	if err != nil {
@@ -45,7 +45,7 @@ func (s *ArtistService) UpdateArtist(id string, artist *Artist) error {
 	return nil
 }
 
-func (s *ArtistService) DeleteArtist(id string) error {
+func (s *Service) DeleteArtist(id string) error {
 	filter := bson.D{{"_id", id}}
 	_, err := s.ArtistCollection.DeleteOne(s.Context, filter)
 	if err != nil {
@@ -53,7 +53,7 @@ func (s *ArtistService) DeleteArtist(id string) error {
 	}
 	return nil
 }
-func (s *ArtistService) GetArtists() ([]Artist, error) {
+func (s *Service) GetArtists() ([]Artist, error) {
 	var artists []Artist
 	cursor, err := s.ArtistCollection.Find(s.Context, bson.D{{}})
 	if err != nil {

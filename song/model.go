@@ -6,31 +6,32 @@ import (
 )
 
 type Song struct {
-	Id       primitive.ObjectID `bson:"_id"`
-	Name     string             `bson:"name"`
-	Length   time.Duration      `bson:"length"`
-	Genres   []string           `bson:"genres"`
-	Album    primitive.ObjectID `bson:"album"`
-	Artist   primitive.ObjectID `bson:"artist"`
-	CreateAt time.Time          `bson:"createAt"`
-	UpdateAt time.Time          `bson:"updateAt"`
+	Id       primitive.ObjectID  `bson:"_id"`
+	Name     string              `bson:"name"`
+	Length   string              `bson:"length"`
+	Genres   []string            `bson:"genres"`
+	Album    *primitive.ObjectID `bson:"album,omitempty"`
+	Artist   *primitive.ObjectID `bson:"artist"`
+	CreateAt time.Time           `bson:"createAt"`
+	UpdateAt time.Time           `bson:"updateAt"`
 }
 
-func NewSong(songDTO SongDTO) (*Song, error) {
-	var err error
-	albumId, err := primitive.ObjectIDFromHex(songDTO.Album)
+func NewSong(songDTO DTO) (*Song, error) {
+
+	albumId, _ := primitive.ObjectIDFromHex(songDTO.Album)
 	artistId, err := primitive.ObjectIDFromHex(songDTO.Artist)
-	length, err := time.ParseDuration(songDTO.Length)
+
 	if err != nil {
 		return nil, err
 	}
 	return &Song{
+		Id:       primitive.NewObjectID(),
 		Name:     songDTO.Name,
-		Length:   length,
+		Length:   songDTO.Length,
 		Genres:   songDTO.Genres,
-		Album:    albumId,
-		Artist:   artistId,
+		Album:    &albumId,
+		Artist:   &artistId,
 		CreateAt: time.Now(),
 		UpdateAt: time.Now(),
-	}, err
+	}, nil
 }

@@ -4,17 +4,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ArtistController struct {
-	ArtistService ArtistService
+type Controller struct {
+	ArtistService Service
 }
 
-func NewArtistController(userService ArtistService) ArtistController {
-	return ArtistController{
+func NewArtistController(userService Service) Controller {
+	return Controller{
 		ArtistService: userService,
 	}
 }
 
-func (c *ArtistController) GetArtists(ctx *gin.Context) {
+func (c *Controller) GetArtists(ctx *gin.Context) {
 	artists, err := c.ArtistService.GetArtists()
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
@@ -26,7 +26,7 @@ func (c *ArtistController) GetArtists(ctx *gin.Context) {
 	}
 	ctx.JSON(200, artists)
 }
-func (c *ArtistController) GetArtist(ctx *gin.Context) {
+func (c *Controller) GetArtist(ctx *gin.Context) {
 	id := ctx.Param("id")
 	artist, err := c.ArtistService.GetArtist(id)
 	if err != nil {
@@ -36,8 +36,8 @@ func (c *ArtistController) GetArtist(ctx *gin.Context) {
 	ctx.JSON(200, artist)
 }
 
-func (c *ArtistController) CreateArtist(ctx *gin.Context) {
-	var artist ArtistDTO
+func (c *Controller) CreateArtist(ctx *gin.Context) {
+	var artist DTO
 	ctx.BindJSON(&artist)
 	err := c.ArtistService.CreateArtist(&artist)
 	if err != nil {
@@ -46,7 +46,7 @@ func (c *ArtistController) CreateArtist(ctx *gin.Context) {
 	}
 	ctx.JSON(200, artist)
 }
-func (c *ArtistController) UpdateArtist(ctx *gin.Context) {
+func (c *Controller) UpdateArtist(ctx *gin.Context) {
 	var artist Artist
 	ctx.BindJSON(&artist)
 	err := c.ArtistService.UpdateArtist(artist.Id.Hex(), &artist)
@@ -56,7 +56,7 @@ func (c *ArtistController) UpdateArtist(ctx *gin.Context) {
 	}
 	ctx.JSON(200, artist)
 }
-func (c *ArtistController) DeleteArtist(ctx *gin.Context) {
+func (c *Controller) DeleteArtist(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	err := c.ArtistService.DeleteArtist(id)
@@ -66,7 +66,7 @@ func (c *ArtistController) DeleteArtist(ctx *gin.Context) {
 	}
 	ctx.JSON(200, gin.H{"message": "Artist deleted"})
 }
-func (c *ArtistController) RegisterRoutes(rg *gin.RouterGroup) {
+func (c *Controller) RegisterRoutes(rg *gin.RouterGroup) {
 	artistRoute := rg.Group("/artist")
 	artistRoute.GET("/all", c.GetArtists)
 	artistRoute.GET(":id", c.GetArtist)

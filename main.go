@@ -20,22 +20,22 @@ var (
 	err         error
 
 	albumCollection *mongo.Collection
-	albumService    album.AlbumService
-	albumController album.AlbumController
+	albumService    album.Service
+	albumController album.Controller
 
 	artistCollection *mongo.Collection
-	artistService    artist.ArtistService
-	artistController artist.ArtistController
+	artistService    artist.Service
+	artistController artist.Controller
 
 	songCollection *mongo.Collection
-	songService    song.SongService
-	songController song.SongController
+	songService    song.Service
+	songController song.Controller
 )
 
 func init() {
 	ctx = context.TODO()
 
-	mongoConnection := options.Client().ApplyURI("mongodb+srv://test:test@cluster0.bki6ob7.mongodb.net/?retryWrites=true&w=majority")
+	mongoConnection := options.Client().ApplyURI("mongodb+srv://root:root@cluster0.cd2g5kn.mongodb.net/?retryWrites=true&w=majority")
 	mongoclient, err = mongo.Connect(ctx, mongoConnection)
 	if err != nil {
 		log.Fatal("error while connecting with mongo", err)
@@ -68,6 +68,5 @@ func main() {
 	artistController.RegisterRoutes(basePath)
 	albumController.RegisterRoutes(basePath)
 	songController.RegisterRoutes(basePath)
-
 	log.Fatal(server.Run(":9090"))
 }

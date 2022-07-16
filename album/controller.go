@@ -2,18 +2,18 @@ package album
 
 import "github.com/gin-gonic/gin"
 
-type AlbumController struct {
-	AlbumService AlbumService
+type Controller struct {
+	AlbumService Service
 }
 
-func NewAlbumController(albumService AlbumService) AlbumController {
-	return AlbumController{
+func NewAlbumController(albumService Service) Controller {
+	return Controller{
 		AlbumService: albumService,
 	}
 }
 
-func (c *AlbumController) CreateAlbum(ctx *gin.Context) {
-	var album AlbumDTO
+func (c *Controller) CreateAlbum(ctx *gin.Context) {
+	var album DTO
 	ctx.BindJSON(&album)
 	err := c.AlbumService.CreateAlbum(&album)
 	if err != nil {
@@ -22,7 +22,7 @@ func (c *AlbumController) CreateAlbum(ctx *gin.Context) {
 	}
 	ctx.JSON(200, album)
 }
-func (c *AlbumController) GetAlbum(ctx *gin.Context) {
+func (c *Controller) GetAlbum(ctx *gin.Context) {
 	id := ctx.Param("id")
 	album, err := c.AlbumService.GetAlbum(id)
 	if err != nil {
@@ -31,7 +31,7 @@ func (c *AlbumController) GetAlbum(ctx *gin.Context) {
 	}
 	ctx.JSON(200, album)
 }
-func (c *AlbumController) GetAlbums(ctx *gin.Context) {
+func (c *Controller) GetAlbums(ctx *gin.Context) {
 	albums, err := c.AlbumService.GetAlbums()
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
@@ -43,7 +43,7 @@ func (c *AlbumController) GetAlbums(ctx *gin.Context) {
 	}
 	ctx.JSON(200, albums)
 }
-func (c *AlbumController) UpdateAlbum(ctx *gin.Context) {
+func (c *Controller) UpdateAlbum(ctx *gin.Context) {
 	var album Album
 	ctx.BindJSON(&album)
 	err := c.AlbumService.UpdateAlbum(album.Id.Hex(), &album)
@@ -53,7 +53,7 @@ func (c *AlbumController) UpdateAlbum(ctx *gin.Context) {
 	}
 	ctx.JSON(200, album)
 }
-func (c *AlbumController) DeleteAlbum(ctx *gin.Context) {
+func (c *Controller) DeleteAlbum(ctx *gin.Context) {
 	id := ctx.Param("id")
 	err := c.AlbumService.DeleteAlbum(id)
 	if err != nil {
@@ -62,7 +62,7 @@ func (c *AlbumController) DeleteAlbum(ctx *gin.Context) {
 	}
 	ctx.JSON(200, gin.H{"message": "Album deleted"})
 }
-func (c *AlbumController) GetAlbumsByArtist(ctx *gin.Context) {
+func (c *Controller) GetAlbumsByArtist(ctx *gin.Context) {
 	id := ctx.Param("id")
 	albums, err := c.AlbumService.GetAlbumsByArtist(id)
 	if err != nil {
@@ -75,7 +75,7 @@ func (c *AlbumController) GetAlbumsByArtist(ctx *gin.Context) {
 	}
 	ctx.JSON(200, albums)
 }
-func (c *AlbumController) RegisterRoutes(rg *gin.RouterGroup) {
+func (c *Controller) RegisterRoutes(rg *gin.RouterGroup) {
 	albumRouter := rg.Group("/album")
 	albumRouter.POST("/add", c.CreateAlbum)
 	albumRouter.GET("/all", c.GetAlbums)

@@ -2,7 +2,7 @@ package artist
 
 import "time"
 
-type ArtistDTO struct {
+type DTO struct {
 	Name     string   `json:"name"`
 	Age      string   `json:"age"`
 	ImageURL string   `json:"imageURL"`
