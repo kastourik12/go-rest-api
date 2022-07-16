@@ -59,15 +59,10 @@ func (s *ArtistService) GetArtists() ([]Artist, error) {
 	if err != nil {
 		return nil, err
 	}
-	for cursor.Next(s.Context) {
-		var artist Artist
-		err := cursor.Decode(&artist)
-		if err != nil {
-			return nil, err
-		}
-		artists = append(artists, artist)
-	}
+	err = cursor.All(s.Context, &artists)
 	cursor.Close(s.Context)
-
+	if err != nil {
+		return nil, err
+	}
 	return artists, nil
 }

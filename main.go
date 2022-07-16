@@ -9,21 +9,27 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"kastouri/web-service-gin/album"
 	"kastouri/web-service-gin/artist"
+	"kastouri/web-service-gin/song"
 	"log"
 )
 
 var (
-	server           *gin.Engine
-	albumCollection  *mongo.Collection
-	albumService     album.AlbumService
-	albumController  album.AlbumController
+	server      *gin.Engine
+	ctx         context.Context
+	mongoclient *mongo.Client
+	err         error
+
+	albumCollection *mongo.Collection
+	albumService    album.AlbumService
+	albumController album.AlbumController
+
 	artistCollection *mongo.Collection
 	artistService    artist.ArtistService
 	artistController artist.ArtistController
-	ctx              context.Context
 
-	mongoclient *mongo.Client
-	err         error
+	songCollection *mongo.Collection
+	songService    song.SongService
+	songController song.SongController
 )
 
 func init() {
@@ -42,11 +48,16 @@ func init() {
 	fmt.Println("mongo connection established")
 
 	artistCollection = mongoclient.Database("test-go").Collection("artists")
+	artistService = artist.NewArtistService(artistCollection, ctx)
+	artistController = artist.NewArtistController(artistService)
+
 	albumCollection = mongoclient.Database("test-go").Collection("albums")
 	albumService = album.NewAlbumService(albumCollection, ctx)
 	albumController = album.NewAlbumController(albumService)
-	artistService = artist.NewArtistService(artistCollection, ctx)
-	artistController = artist.NewArtistController(artistService)
+
+	songCollection = mongoclient.Database("test-go").Collection("songs")
+	songService = song.NewSongService(songCollection, ctx)
+	songController = song.NewSongController(songService)
 	server = gin.Default()
 }
 
@@ -56,6 +67,7 @@ func main() {
 	basePath := server.Group("/v1")
 	artistController.RegisterRoutes(basePath)
 	albumController.RegisterRoutes(basePath)
+	songController.RegisterRoutes(basePath)
 
 	log.Fatal(server.Run(":9090"))
 }
