@@ -3,10 +3,10 @@ package song
 import "github.com/gin-gonic/gin"
 
 type SongController struct {
-	SongService SongService
+	SongService Service
 }
 
-func NewSongController(songService SongService) SongController {
+func NewSongController(songService Service) SongController {
 	return SongController{
 		SongService: songService,
 	}

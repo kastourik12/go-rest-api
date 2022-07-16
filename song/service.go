@@ -8,25 +8,28 @@ import (
 	"time"
 )
 
-type SongService struct {
+type Service struct {
 	SongCollection   *mongo.Collection
 	ArtistCollection *mongo.Collection
 	Context          context.Context
 }
 
-func NewSongService(songCollection *mongo.Collection, ctx context.Context) SongService {
-	return SongService{
+func NewSongService(songCollection *mongo.Collection, ctx context.Context) Service {
+	return Service{
 		SongCollection: songCollection,
 		Context:        ctx,
 	}
 }
-func (s *SongService) CreateSong(song *SongDTO) error {
-	song.CreateAt = time.Now()
-	song.UpdateAt = time.Now()
-	_, err := s.SongCollection.InsertOne(s.Context, song)
-	return err
+func (s *Service) CreateSong(song *SongDTO) error {
+
+	createdSong, err := NewSong(*song)
+	if err != nil {
+		return err
+	}
+	_, err2 := s.SongCollection.InsertOne(s.Context, createdSong)
+	return err2
 }
-func (s *SongService) GetSong(id string) (*Song, error) {
+func (s *Service) GetSong(id string) (*Song, error) {
 	var song Song
 	objID, _ := primitive.ObjectIDFromHex(id)
 	err := s.SongCollection.FindOne(s.Context, bson.M{"_id": objID}).Decode(&song)
@@ -35,7 +38,7 @@ func (s *SongService) GetSong(id string) (*Song, error) {
 	}
 	return &song, nil
 }
-func (s *SongService) UpdateSong(id string, song *Song) error {
+func (s *Service) UpdateSong(id string, song *Song) error {
 	song.UpdateAt = time.Now()
 	_, err := s.SongCollection.UpdateOne(s.Context, bson.M{"_id": id}, bson.M{"$set": song})
 	if err != nil {
@@ -43,7 +46,7 @@ func (s *SongService) UpdateSong(id string, song *Song) error {
 	}
 	return nil
 }
-func (s *SongService) DeleteSong(id string) error {
+func (s *Service) DeleteSong(id string) error {
 	filter := bson.D{{"_id", id}}
 	_, err := s.SongCollection.DeleteOne(s.Context, filter)
 	if err != nil {
@@ -51,7 +54,7 @@ func (s *SongService) DeleteSong(id string) error {
 	}
 	return nil
 }
-func (s *SongService) GetSongs() ([]Song, error) {
+func (s *Service) GetSongs() ([]Song, error) {
 	var songs []Song
 	cursor, err := s.SongCollection.Find(s.Context, bson.D{{}})
 	if err != nil {
@@ -64,7 +67,7 @@ func (s *SongService) GetSongs() ([]Song, error) {
 	}
 	return songs, nil
 }
-func (s *SongService) GetSongsByArtist(artistId string) ([]Song, error) {
+func (s *Service) GetSongsByArtist(artistId string) ([]Song, error) {
 	var songs []Song
 	objID, _ := primitive.ObjectIDFromHex(artistId)
 	cursor, err := s.SongCollection.Find(s.Context, bson.M{"artist": objID})
@@ -79,7 +82,7 @@ func (s *SongService) GetSongsByArtist(artistId string) ([]Song, error) {
 	return songs, nil
 }
 
-func (s *SongService) GetSongsByAlbum(id string) ([]Song, error) {
+func (s *Service) GetSongsByAlbum(id string) ([]Song, error) {
 	var songs []Song
 	objID, _ := primitive.ObjectIDFromHex(id)
 	cursor, err := s.SongCollection.Find(s.Context, bson.M{"album": objID})
